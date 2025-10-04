@@ -10,34 +10,28 @@ on:
 
 jobs:
   build-and-test:
-    # Run the job on the latest stable Ubuntu runner
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        # Test against multiple Long-Term Support (LTS) versions for coverage
         node-version: [18.x, 20.x] 
 
     steps:
     - name: Checkout repository
-      # Use the latest major version for security and features
       uses: actions/checkout@v4
 
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        # Add caching to speed up future runs
         cache: 'npm'
 
-    - name: Install dependencies
-      # Use 'npm ci' for faster, more reliable installs in CI environments
-      run: npm ci
+    - name: Install dependencies (Fix ERESOLVE error)
+      # Added --legacy-peer-deps to resolve the sharp dependency conflict.
+      run: npm ci --legacy-peer-deps
 
     - name: Build project (optional)
-      # Run the build script if it exists
       run: npm run build || echo "No build script found, skipping build step."
 
     - name: Run tests
-      # This is the standard final step for a CI job
       run: npm test
