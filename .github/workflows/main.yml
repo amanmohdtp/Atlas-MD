@@ -9,29 +9,35 @@ on:
       - main
 
 jobs:
-  build:
-
+  build-and-test:
+    # Run the job on the latest stable Ubuntu runner
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [20.x]   # Specific Node.js version set to 20.x
+        # Test against multiple Long-Term Support (LTS) versions for coverage
+        node-version: [18.x, 20.x] 
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      # Use the latest major version for security and features
+      uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        check-latest: true   # Always grab the exact latest patch for this version
+        # Add caching to speed up future runs
+        cache: 'npm'
 
     - name: Install dependencies
-      run: npm install
+      # Use 'npm ci' for faster, more reliable installs in CI environments
+      run: npm ci
 
     - name: Build project (optional)
-      run: npm run build || echo "No build script found, skipping..."
+      # Run the build script if it exists
+      run: npm run build || echo "No build script found, skipping build step."
 
-    - name: Start application
-      run: npm start
+    - name: Run tests
+      # This is the standard final step for a CI job
+      run: npm test
